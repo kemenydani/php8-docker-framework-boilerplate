@@ -7,6 +7,7 @@ namespace src\http;
 use ReflectionClass;
 use src\controller\dashboard\Controller;
 use src\controller\dashboard\rest\auth\SignUpController;
+use src\http\attribute\PathParam;
 use src\http\attribute\QueryParam;
 use src\http\attribute\RequestMapping;
 use Throwable;
@@ -29,13 +30,19 @@ final class RequestMapper {
                 $reflectionClass = new ReflectionClass($controller);
                 $requestMappingAttribute = $reflectionClass->getAttributes(RequestMapping::class)[0];
                 $arguments = $requestMappingAttribute->getArguments();
-                if ($arguments[0] === RequestInfo::getRequestMethod() && $arguments[1] === RequestInfo::getRequestUri()) {
+                if ($arguments[0] === RequestInfo::getRequestMethod() && $arguments[1] === RequestInfo::getRequestPath()) {
                     $constructor = $reflectionClass->getConstructor();
                     $constructorArguments = [];
                     if ($constructor) {
                         foreach ($constructor->getParameters() as $constructorParameter) {
-                            foreach($constructorParameter->getAttributes(QueryParam::class) as $queryParamAttribute) {
-                                $constructorArguments[] = $_GET[$queryParamAttribute->getArguments()[0]];
+                            foreach($constructorParameter->getAttributes() as $constructorAttribute) {
+                                if ($constructorAttribute->getName() === QueryParam::class) {
+                                    $constructorArguments[] = $_GET[$constructorAttribute->getArguments()[0]];
+                                }
+
+                                if ($constructorAttribute->getName() === PathParam::class) {
+                                    $constructorArguments[] = $_GET[$constructorAttribute->getArguments()[0]];
+                                }
                             }
                         }
                     }

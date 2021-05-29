@@ -7,6 +7,10 @@ namespace src\http;
 final class RequestInfo {
 
     public static function getRequestUri(): string {
+        return $_SERVER["REQUEST_URI"];
+    }
+
+    public static function getRequestPath(): string {
         return preg_replace('/\?.*/', '', $_SERVER["REQUEST_URI"]);
     }
 
