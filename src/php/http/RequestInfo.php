@@ -4,6 +4,13 @@
 namespace src\http;
 
 
-class RequestInfo {
+final class RequestInfo {
 
+    public static function getRequestUri(): string {
+        return $_SERVER["REQUEST_URI"];
+    }
+
+    public static function getRequestMethod(): string {
+        return $_SERVER["REQUEST_METHOD"];
+    }
 }
