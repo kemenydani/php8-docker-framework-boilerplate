@@ -6,11 +6,11 @@ namespace src\http\attribute;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class QueryParam implements RequestParam {
+final class Cookie implements RequestParam {
     public function __construct(private string $name) {
     }
 
     public function getValue(): ?string {
-        return @$_GET[$this->name];
+        return @$_COOKIE[$this->name];
     }
 }

@@ -1,10 +1,6 @@
 ARG PHP_IMAGE
 FROM php:$PHP_IMAGE
 
-# SET NO INTERACTION
-ENV DEBIAN_FRONTEND noninteractive
-ENV COMPOSER_NO_INTERACTION 1
-
 # CONFIGURE APACHE
 RUN a2enmod rewrite
 
@@ -26,7 +22,7 @@ COPY vhost.local.conf /etc/apache2/sites-enabled/
 RUN rm /etc/apache2/sites-enabled/000-default.conf
 
 # INSTALL XDEBUG
-RUN pecl install xdebug-3.0.0
+RUN pecl install xdebug-3.1.1
 RUN docker-php-ext-enable xdebug
 RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 RUN echo "xdebug.client_host = host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
@@ -41,6 +37,12 @@ RUN echo "error_reporting=E_ALL" >> /usr/local/etc/php/php.ini
 
 # INSTALL COMPOSER
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# INSTALL NODE
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash
+RUN apt-get install --yes nodejs
+RUN node -v
+RUN npm -v
 
 EXPOSE 80
 ENTRYPOINT [ "/usr/sbin/apache2" ]

@@ -4,9 +4,14 @@
 namespace src\http;
 
 
+use JetBrains\PhpStorm\Pure;
+use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionMethod;
+use SebastianBergmann\Type\ReflectionMapper;
 use src\controller\dashboard\Controller;
 use src\controller\dashboard\rest\auth\SignUpController;
+use src\http\attribute\Cookie;
 use src\http\attribute\PathParam;
 use src\http\attribute\QueryParam;
 use src\http\attribute\RequestMapping;
@@ -25,33 +30,60 @@ final class RequestMapper {
     }
 
     public function handleRequest(RequestInfo $requestInfo): void {
-        try {
-            foreach ($this->controllers as $controller) {
-                $reflectionClass = new ReflectionClass($controller);
-                $requestMappingAttribute = $reflectionClass->getAttributes(RequestMapping::class)[0];
-                $arguments = $requestMappingAttribute->getArguments();
-                if ($arguments[0] === RequestInfo::getRequestMethod() && $arguments[1] === RequestInfo::getRequestPath()) {
-                    $constructor = $reflectionClass->getConstructor();
-                    $constructorArguments = [];
-                    if ($constructor) {
-                        foreach ($constructor->getParameters() as $constructorParameter) {
-                            foreach($constructorParameter->getAttributes() as $constructorAttribute) {
-                                if ($constructorAttribute->getName() === QueryParam::class) {
-                                    $constructorArguments[] = $_GET[$constructorAttribute->getArguments()[0]];
-                                }
+        foreach ($this->controllers as $controller) {
+            $reflectionClass = new ReflectionClass($controller);
+            if ($this->matches($reflectionClass)) {
+                $constructor = $reflectionClass->getConstructor();
+                $constructorArguments = [];
+                if ($constructor) {
+                    $constructorArguments = $this->getConstructorArguments($constructor);
+                }
+                $this->loadController($reflectionClass, $constructorArguments);
+            }
+        }
+    }
 
-                                if ($constructorAttribute->getName() === PathParam::class) {
-                                    $constructorArguments[] = $_GET[$constructorAttribute->getArguments()[0]];
-                                }
-                            }
-                        }
-                    }
-                    $instance = $reflectionClass->newInstanceArgs($constructorArguments);
-                    $instance->handleRequest();
+    private function loadController(ReflectionClass $reflectionClass, array $arguments = []) {
+        try {
+            $instance = $reflectionClass->newInstanceArgs($arguments);
+            $instance->handleRequest();
+        } catch (Throwable $t) {
+            throw $t;
+        }
+    }
+
+    #[Pure]
+    private function getConstructorArguments(ReflectionMethod $reflectionMethod): array {
+        $constructorArguments = [];
+        foreach ($reflectionMethod->getParameters() as $constructorParameter) {
+            foreach($constructorParameter->getAttributes() as $constructorAttribute) {
+                if ($constructorAttribute->getName() === QueryParam::class) {
+                    $queryParam = new QueryParam(...$constructorAttribute->getArguments());
+                    $constructorArguments[] = $queryParam->getValue();
+                }
+                if ($constructorAttribute->getName() === Cookie::class) {
+                    $cookie = new Cookie(...$constructorAttribute->getArguments());
+                    $constructorArguments[] = $cookie->getValue();
                 }
             }
-        } catch (Throwable) {
-
         }
+        return $constructorArguments;
+    }
+
+    #[Pure]
+    private function getAttribute(ReflectionClass $reflectionClass, string $namespace): ReflectionAttribute {
+        return $reflectionClass->getAttributes($namespace)[0];
+    }
+
+    #[Pure]
+    private function getRequestMappingAttribute(ReflectionClass $reflectionClass): RequestMapping {
+        $requestMappingAttribute = $this->getAttribute($reflectionClass, RequestMapping::class);
+        return new RequestMapping(...$requestMappingAttribute->getArguments());
+    }
+
+    private function matches(ReflectionClass $reflectionClass): bool {
+        $requestMappingAttribute = $this->getRequestMappingAttribute($reflectionClass);
+        return $requestMappingAttribute->matchesWithRequestMethod(RequestInfo::getRequestMethod(),
+            RequestInfo::getRequestPath());
     }
 }

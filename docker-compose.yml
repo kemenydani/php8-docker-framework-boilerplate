@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
-        PHP_IMAGE: 8.0.2-apache-buster
+        PHP_IMAGE: 8.1.0RC4-apache-buster
     volumes:
       - .:/var/www/html
     restart: always

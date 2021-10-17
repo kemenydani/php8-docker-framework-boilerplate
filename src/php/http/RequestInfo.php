@@ -3,6 +3,7 @@
 
 namespace src\http;
 
+use src\constant\RequestMethod;
 
 final class RequestInfo {
 
@@ -14,7 +15,7 @@ final class RequestInfo {
         return preg_replace('/\?.*/', '', $_SERVER["REQUEST_URI"]);
     }
 
-    public static function getRequestMethod(): string {
-        return $_SERVER["REQUEST_METHOD"];
+    public static function getRequestMethod(): RequestMethod {
+        return RequestMethod::from($_SERVER["REQUEST_METHOD"]);
     }
 }

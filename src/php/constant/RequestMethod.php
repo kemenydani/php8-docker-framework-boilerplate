@@ -3,8 +3,7 @@
 
 namespace src\constant;
 
-
-final class RequestMethod {
-    public const GET = "GET";
-    public const POST = "POST";
+enum RequestMethod: string {
+    case GET = "GET";
+    case POST = "POST";
 }

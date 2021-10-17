@@ -5,17 +5,17 @@ namespace src\controller\dashboard\rest\auth;
 
 use src\constant\RequestMethod;
 use src\controller\dashboard\Controller;
-use src\http\attribute\PathParam;
+use src\http\attribute\Cookie;
 use src\http\attribute\QueryParam;
 use src\http\attribute\RequestMapping;
 
-#[RequestMapping(RequestMethod::GET, "/dashboard/rest/auth/sign-up}")]
+#[RequestMapping(RequestMethod::GET, "/dashboard/rest/auth/sign-up")]
 final class SignUpController implements Controller {
 
-    public function __construct(#[QueryParam("foo")] string $foo, #[PathParam("")] string $bar) {
+    public function __construct(#[QueryParam("foo")] ?string $queryParam, #[Cookie("device")] ?string $cookie) {
         echo 'constr';
-        echo $foo;
-        echo $bar;
+        echo $queryParam;
+        echo $cookie;
     }
 
     public function handleRequest(): void {
