@@ -7,10 +7,12 @@ use src\constant\RequestMethod;
 use src\controller\dashboard\Controller;
 use src\http\attribute\Cookie;
 use src\http\attribute\QueryParam;
+use src\http\attribute\RequestInterceptor;
 use src\http\attribute\RequestMapping;
 use src\http\attribute\RequestParam;
 
 #[RequestMapping(RequestMethod::GET, "/dashboard/rest/auth/sign-up")]
+#[RequestInterceptor("foo")]
 final class SignUpController implements Controller {
 
     public function __construct(
