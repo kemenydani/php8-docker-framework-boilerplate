@@ -6,7 +6,7 @@ namespace src\http\attribute;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class Cookie implements RequestParam {
+final class Cookie implements RequestAttribute {
     public function __construct(private string $name) {
     }
 

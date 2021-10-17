@@ -15,6 +15,7 @@ use src\http\attribute\Cookie;
 use src\http\attribute\PathParam;
 use src\http\attribute\QueryParam;
 use src\http\attribute\RequestMapping;
+use src\http\attribute\RequestParam;
 use Throwable;
 
 final class RequestMapper {
@@ -59,6 +60,10 @@ final class RequestMapper {
             foreach($constructorParameter->getAttributes() as $constructorAttribute) {
                 if ($constructorAttribute->getName() === QueryParam::class) {
                     $queryParam = new QueryParam(...$constructorAttribute->getArguments());
+                    $constructorArguments[] = $queryParam->getValue();
+                }
+                if ($constructorAttribute->getName() === RequestParam::class) {
+                    $queryParam = new RequestParam(...$constructorAttribute->getArguments());
                     $constructorArguments[] = $queryParam->getValue();
                 }
                 if ($constructorAttribute->getName() === Cookie::class) {
