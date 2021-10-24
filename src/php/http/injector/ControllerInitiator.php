@@ -24,17 +24,22 @@ final class ControllerInitiator {
         $arguments = [];
         foreach ($constructor->getParameters() as $parameter) {
             foreach($parameter->getAttributes() as $attribute) {
-                if ($attribute->getName() === QueryParam::class) {
-                    $queryParam = new QueryParam(...$attribute->getArguments());
-                    $arguments[] = $queryParam->getValue();
-                }
-                if ($attribute->getName() === RequestParam::class) {
-                    $queryParam = new RequestParam(...$attribute->getArguments());
-                    $arguments[] = $queryParam->getValue();
-                }
-                if ($attribute->getName() === Cookie::class) {
-                    $cookie = new Cookie(...$attribute->getArguments());
-                    $arguments[] = $cookie->getValue();
+                switch ($attribute->getName()) {
+                    case QueryParam::class:
+                        $attribute = new QueryParam(...$attribute->getArguments());
+                        $arguments[] = $attribute->getValue();
+                        break;
+                    case RequestParam::class:
+                        $attribute = new RequestParam(...$attribute->getArguments());
+                        $arguments[] = $attribute->getValue();
+                        break;
+                    case Cookie::class:
+                        $attribute = new Cookie(...$attribute->getArguments());
+                        $arguments[] = $attribute->getValue();
+                        break;
+                    default:
+                        $arguments[] = $parameter->getDefaultValue();
+                        break;
                 }
             }
         }
