@@ -7,14 +7,10 @@ namespace src\http;
 use JetBrains\PhpStorm\Pure;
 use ReflectionAttribute;
 use ReflectionClass;
-use ReflectionMethod;
 use src\controller\dashboard\Controller;
 use src\controller\dashboard\rest\auth\SignUpController;
-use src\http\attribute\Cookie;
-use src\http\attribute\QueryParam;
 use src\http\attribute\RequestMapping;
-use src\http\attribute\RequestParam;
-use Throwable;
+use src\http\injector\ControllerInitiator;
 
 final class RequestMapper {
 
@@ -25,52 +21,15 @@ final class RequestMapper {
         SignUpController::class
     ];
 
-    public function __construct() {
-    }
-
-    public function handleRequest(RequestInfo $requestInfo): void {
+    public function handleRequest(): void {
         foreach ($this->controllers as $controller) {
             $reflectionClass = new ReflectionClass($controller);
             if ($this->matches($reflectionClass)) {
-                $constructor = $reflectionClass->getConstructor();
-                $constructorArguments = [];
-                if ($constructor) {
-                    $constructorArguments = $this->getConstructorArguments($constructor);
-                }
-                $this->loadController($reflectionClass, $constructorArguments);
+                $initiator = new ControllerInitiator($reflectionClass);
+                $instance = $initiator->initiate();
+                $instance->handleRequest();
             }
         }
-    }
-
-    private function loadController(ReflectionClass $reflectionClass, array $arguments = []) {
-        try {
-            $instance = $reflectionClass->newInstanceArgs($arguments);
-            $instance->handleRequest();
-        } catch (Throwable $t) {
-            throw $t;
-        }
-    }
-
-    #[Pure]
-    private function getConstructorArguments(ReflectionMethod $reflectionMethod): array {
-        $constructorArguments = [];
-        foreach ($reflectionMethod->getParameters() as $constructorParameter) {
-            foreach($constructorParameter->getAttributes() as $constructorAttribute) {
-                if ($constructorAttribute->getName() === QueryParam::class) {
-                    $queryParam = new QueryParam(...$constructorAttribute->getArguments());
-                    $constructorArguments[] = $queryParam->getValue();
-                }
-                if ($constructorAttribute->getName() === RequestParam::class) {
-                    $queryParam = new RequestParam(...$constructorAttribute->getArguments());
-                    $constructorArguments[] = $queryParam->getValue();
-                }
-                if ($constructorAttribute->getName() === Cookie::class) {
-                    $cookie = new Cookie(...$constructorAttribute->getArguments());
-                    $constructorArguments[] = $cookie->getValue();
-                }
-            }
-        }
-        return $constructorArguments;
     }
 
     #[Pure]
