@@ -20,20 +20,20 @@ final class ControllerInitiator {
     }
 
     #[Pure]
-    private function getConstructorArguments(ReflectionMethod $reflectionMethod): array {
+    private function getConstructorArguments(ReflectionMethod $constructor): array {
         $arguments = [];
-        foreach ($reflectionMethod->getParameters() as $constructorParameter) {
-            foreach($constructorParameter->getAttributes() as $constructorAttribute) {
-                if ($constructorAttribute->getName() === QueryParam::class) {
-                    $queryParam = new QueryParam(...$constructorAttribute->getArguments());
+        foreach ($constructor->getParameters() as $parameter) {
+            foreach($parameter->getAttributes() as $attribute) {
+                if ($attribute->getName() === QueryParam::class) {
+                    $queryParam = new QueryParam(...$attribute->getArguments());
                     $arguments[] = $queryParam->getValue();
                 }
-                if ($constructorAttribute->getName() === RequestParam::class) {
-                    $queryParam = new RequestParam(...$constructorAttribute->getArguments());
+                if ($attribute->getName() === RequestParam::class) {
+                    $queryParam = new RequestParam(...$attribute->getArguments());
                     $arguments[] = $queryParam->getValue();
                 }
-                if ($constructorAttribute->getName() === Cookie::class) {
-                    $cookie = new Cookie(...$constructorAttribute->getArguments());
+                if ($attribute->getName() === Cookie::class) {
+                    $cookie = new Cookie(...$attribute->getArguments());
                     $arguments[] = $cookie->getValue();
                 }
             }
